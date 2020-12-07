@@ -1,0 +1,19 @@
+# msg.subr
+# Message printing
+
+exec 3>&1
+
+say () {
+    echo "$*" >&3
+}
+
+warn () {
+    echo "$*" >&2
+}
+
+die () {
+    warn "$*"
+    exit 1
+}
+
+# vi:set ft=sh:
