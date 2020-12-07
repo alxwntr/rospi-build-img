@@ -6,13 +6,14 @@
 pkg_config () {
     local root="$1"
 
-    install_own="-o root -g root"
-    install_file="install ${install_own} -m644"
-    install_prog="install ${install_own} -m755"
-    install_dir="install ${install_own} -m755 -d"
-
     pkg_root="$root"
-    pkg_injail="chroot $root"
+}
+
+# pkg_injail COMMAND
+# Run COMMAND in the jail
+pkg_injail () {
+    [ -d "${pkg_root}" ] || die "No pkg_root!"
+    chroot "$pkg_root" "$@"
 }
 
 # pkg_bootstrap
@@ -25,10 +26,10 @@ pkg_bootstrap () {
     debootstrap "$dist_release" "$pkg_root" "$dist_mirror"
 
     say "Setting up apt..."
-    $install_dir "$apt"
-    $install_file "$srcs/${dist_release}" "$apt/sources.list"
-    $pkg_injail apt-get update
-    $pkg_injail apt-get -y dist-upgrade
+    install_dir "$apt"
+    install_file "$srcs/${dist_release}" "$apt/sources.list"
+    pkg_injail apt-get update
+    pkg_injail apt-get -y dist-upgrade
 }
 
 # pkg_set_sources
@@ -43,31 +44,31 @@ pkg_set_sources () {
     if [ -n "${sources_lists}" ]
     then
         say "Setting up additional package sources..."
-        $install_dir "$sto"
+        install_dir "$sto"
         for s in ${sources_lists}
         do
-            $install_file "$sfrom/${s}.list" "$sto/${s}.list"
+            install_file "$sfrom/${s}.list" "$sto/${s}.list"
         done
     fi
 
     if [ -n "${sources_keys}" ]
     then
         say "Setting up keys for package sources..."
-        $install_dir "$kto"
+        install_dir "$kto"
         for s in ${sources_keys}
         do
-            $install_file "$kfrom/${s}.gpg" "$kto/${s}.gpg"
+            install_file "$kfrom/${s}.gpg" "$kto/${s}.gpg"
         done
     fi
 
-    $pkg_injail apt-get update
+    pkg_injail apt-get update
 }
 
 # pkg_install_pkgs
 # Install the requested packages
 pkg_install_pkgs () {
     say "Installing additional packages..."
-    $pkg_injail apt-get install -y ${packages_install}
+    pkg_injail apt-get install -y ${packages_install}
 }
 
 # vi:set ft=sh:

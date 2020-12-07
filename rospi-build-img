@@ -7,7 +7,7 @@ config="$1"
 image="$2"
 
 . "$(realpath "$config")"
-. "${share_dir}/msg.subr"
+. "${share_dir}/base.subr"
 . "${share_dir}/img.subr"
 . "${share_dir}/pkg.subr"
 

@@ -1,0 +1,46 @@
+# base.subr
+# Message printing
+
+exec 3>&1
+
+say () {
+    echo "$*" >&3
+}
+
+warn () {
+    echo "$*" >&2
+}
+
+die () {
+    warn "$*"
+    exit 1
+}
+
+install_own="-o root -g root"
+
+install_file () {
+    install $install_own -m644 "$@"
+}
+
+install_prog () {
+    install $install_own -m755 "$@"
+}
+
+install_dir () {
+    install $install_own -m755 -d "$@"
+}
+
+# safe_umount DIR
+# If DIR is a mountpoint, unmount it.
+safe_umount () {
+    local dir="$1"
+
+    local ddev="$(stat -c%d "$dir")"
+    local udev="$(stat -c%d "$dir/..")"
+
+    [ "$ddev" = "$udev" ] && return
+
+    umount "$dir"
+}
+
+# vi:set ft=sh:

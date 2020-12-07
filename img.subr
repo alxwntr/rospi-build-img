@@ -96,6 +96,8 @@ img_mkfs () {
     loop_stop "$lo"
 }
 
+img_devices="null zero full random urandom fd stdin stdout stderr ptmx"
+
 # img_mount IMAGE DIR
 # Mount the filesystems from IMAGE on DIR
 img_mount () {
@@ -106,10 +108,21 @@ img_mount () {
 
     lo="$(loop_start "$img")"
 
-    mkdir -p "$dir"
+    install_dir "$dir"
     mount -t ext4 "${lo}${part_root}" "$dir"
-    mkdir -p "$dir/boot/firmware"
+    install_dir "$dir/boot/firmware"
     mount -t vfat "${lo}${part_boot}" "$dir/boot/firmware"
+
+    install_dir "$dir/proc"
+    mount -t proc proc "$dir/proc"
+    install_dir "$dir/sys"
+    mount -t sysfs sysfs "$dir/sys"
+
+    install_dir "$dir/dev"
+    mount -t tmpfs dev "$dir/dev"
+    (cd /dev && cp -a $img_devices "$(realpath "$dir/dev/")")
+    install_dir "$dir/dev/pts"
+    mount -t devpts devpts "$dir/dev/pts"
 
     echo "$lo"
 }
@@ -121,6 +134,10 @@ img_umount () {
 
     say "Unmounting from [$root]..."
 
+    safe_umount "$root/dev/pts"
+    safe_umount "$root/dev"
+    safe_umount "$root/sys"
+    safe_umount "$root/proc"
     umount "$root/boot/firmware"
     umount "$root"
     loop_stop "$lo"
@@ -140,15 +157,18 @@ img_build () {
     [ -n "$http_proxy" ] && export http_proxy
 
     img_config
+    pkg_config "$root"
 
     img_create "$img"
-    lo="$(img_mount "$img" "$root")"
 
-    pkg_config "$root"
+    lo="$(img_mount "$img" "$root")"
     pkg_bootstrap 
+    img_umount "$root" "$lo"
+
+    # Debootstrap unmounts /proc and so on, so remount.
+    lo="$(img_mount "$img" "$root")"
     pkg_set_sources
     pkg_install_pkgs
-
     img_umount "$root" "$lo"
 
     say "Done."
