@@ -1,0 +1,85 @@
+# step.subr
+# Handle the different steps of building an image
+
+step_all_steps="create bootstrap mount sources install bootable umount"
+
+# step_config CONFIG IMAGE ROOT
+# Set up the config globals
+step_config () {
+    local config="$1" img="$2" root="$3"
+
+    [ -z "$share_dir" ]     && die "I have no share_dir!"
+    [ -z "$img" ]           && die "Must specify an image filename!"
+    [ -d "$root" ]          || die "Root mount dir must exist!"
+
+    . "$(realpath "$config")"
+
+    [ -z "$dist_release" ]  && die "Must specify dist_release!"
+    [ -z "$dist_mirror" ]   && die "Must specify dist_mirror!"
+
+    [ -n "$http_proxy" ] && export http_proxy
+
+    img_config
+    pkg_config "$root"
+
+    image_file="$(realpath "$img")"
+    image_root="$(realpath "$root")"
+}
+
+step_create () {
+    img_create "$image_file"
+}
+
+step_bootstrap () {
+    local lo="$(img_mount "$image_file" "$image_root")"
+    pkg_bootstrap 
+    img_umount "$image_root" "$lo"
+}
+
+step_mount () {
+    image_loop="$(img_mount "$image_file" "$image_root")"
+    dev_mount_special "$image_root"
+}
+
+step_umount () {
+    dev_umount_special "$image_root"
+    img_umount "$image_root" "$image_loop"
+    image_loop=
+}
+
+step_sources () {
+    pkg_set_sources
+}
+
+step_install () {
+    pkg_install_pkgs
+}
+
+step_bootable () {
+    local b=
+
+    say "Installing boot files..."
+    for b in "${share_dir}/boot/"*
+    do
+        install_file "$b" "$image_root/boot/firmware"
+    done
+}
+
+step_run_steps () {
+    local s= f= v=
+
+    for s in "$@"
+    do
+        v="NO"
+        for f in $step_all_steps
+        do
+            [ "$s" = "$f" ] && v="YES"
+        done
+        [ "$v" = "YES" ] || die "Bad step '$s'!"
+
+        f="step_$s"
+        $f || return 1
+    done
+}
+
+# vi:set ft=sh:

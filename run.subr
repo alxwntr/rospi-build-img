@@ -1,0 +1,39 @@
+# run.subr
+# The main program logic
+
+run_usage () {
+    cat >&2 <<MSG
+Usage: rospi-build-img [-S steps] [-R root] config image
+Steps are: $step_all_steps
+MSG
+    exit 1
+}
+
+run_getopt () {
+    local o= OPTIND OPTARG
+
+    run_root="./root"
+    run_steps="$step_all_steps"
+
+    while getopts "S:R:x" o
+    do
+        case "$o" in
+        S)  run_steps="$OPTARG";    ;;
+        R)  run_root="$OPTARG";     ;;
+        x)  run_set_log;            ;;
+        \?) run_usage;              ;;
+        esac
+    done
+
+    shift $(( $OPTIND - 1 ))
+    [ $# -eq 2 ] || run_usage
+    run_config="$1"
+    run_image="$2"
+}
+
+run_set_log () {
+    exec 2>"./log"
+    set -x
+}
+
+# vi:set ft=sh:

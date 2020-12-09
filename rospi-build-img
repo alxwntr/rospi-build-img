@@ -1,14 +1,17 @@
 #!/bin/sh
 
+set -e
+
 # share_dir=
 : ${share_dir:="$(dirname "$0")"}
 
-config="$1"
-image="$2"
-
-. "$(realpath "$config")"
 . "${share_dir}/base.subr"
+. "${share_dir}/dev.subr"
 . "${share_dir}/img.subr"
 . "${share_dir}/pkg.subr"
+. "${share_dir}/step.subr"
+. "${share_dir}/run.subr"
 
-img_build "$image"
+run_getopt "$@"
+step_config "$run_config" "$run_image" "$run_root"
+step_run_steps $run_steps

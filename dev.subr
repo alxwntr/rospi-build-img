@@ -1,0 +1,52 @@
+# dev.subr
+# Functions for dealing with special files
+
+dev_devices="null zero full random urandom fd stdin stdout stderr ptmx"
+
+# loop_start IMAGE
+# Creates a loop device and prints its name
+loop_start () {
+    local img="$1"
+    local lo=
+
+    lo="$(losetup -f --show "$img")"
+    [ $? -eq 0 ] || die "Can't setup loop device!"
+
+    partprobe "$lo"
+    echo "$lo"
+}
+
+# loop_stop DEV
+# Detaches a loop device
+loop_stop () {
+    local lo="$1"
+
+    losetup -d "$lo"
+}
+
+# dev_mount_special DIR
+# Mount special filesystems on DIR
+dev_mount_special () {
+    local dir="$1"
+
+    install_dir "$dir/proc"
+    mount -t proc proc "$dir/proc"
+    install_dir "$dir/sys"
+    mount -t sysfs sysfs "$dir/sys"
+
+    install_dir "$dir/dev"
+    mount -t tmpfs dev "$dir/dev"
+    (cd /dev && cp -a $dev_devices "$dir/dev/")
+    install_dir "$dir/dev/pts"
+    mount -t devpts devpts "$dir/dev/pts"
+}
+
+# dev_umount_special DIR
+# Unmount special filesystems from DIR
+dev_umount_special () {
+    local dir="$1"
+
+    umount "$dir/dev/pts" "$dir/dev" "$dir/sys" "$dir/proc"
+}
+
+# vi:set ft=sh:
