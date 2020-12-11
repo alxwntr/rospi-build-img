@@ -21,6 +21,7 @@ loop_start () {
 loop_stop () {
     local lo="$1"
 
+    sync
     losetup -d "$lo"
 }
 
@@ -41,5 +42,15 @@ dev_mount_special () {
     mount -t devpts devpts "$dir/dev/pts"
 }
 
+# dev_fs_param DEV LABEL
+# Retrieve a parameter from tune2fs
+dev_fs_param () {
+    local dev="$1" label="$2"
+    tune2fs -l "$dev" | sed -ne"s/^$label: *//p"
+}
+
+dev_last_block () {
+    sfdisk -q -o End -l "$1" | tail -n+2 | sort -n | tail -n1
+}
 
 # vi:set ft=sh:

@@ -1,7 +1,16 @@
 # step.subr
 # Handle the different steps of building an image
 
-step_all_steps="create bootstrap mount sources install bootable umount"
+step_all_steps="\
+    create \
+    bootstrap \
+    mount \
+    sources \
+    install \
+    bootable \
+    umount \
+    shrink \
+"
 
 # step_config CONFIG IMAGE ROOT
 # Set up the config globals
@@ -61,6 +70,11 @@ step_bootable () {
     do
         install_file "$b" "$image_root/boot/firmware"
     done
+}
+
+step_shrink () {
+    say "Shrinking root filesystem..."
+    img_shrink_fs "$image_file"
 }
 
 step_run_steps () {

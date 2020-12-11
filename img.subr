@@ -105,4 +105,34 @@ img_umount () {
     loop_stop "$lo"
 }
 
+# img_shrink_fs IMG
+# Resize the root fs on PART as small as possible
+img_shrink_fs () {
+    local img="$1"
+    local dev= pdev= pnum=
+    local blk_sz= blk_cnt= sct_cnt= sct_end= byt_end=
+
+    dev="$(loop_start "$img")"
+    pdev="$dev$part_root"
+    pnum="${part_root#p}"
+
+    e2fsck -n -f "$pdev" 
+    resize2fs -M "$pdev"
+    sync
+
+    blk_sz="$(dev_fs_param "$pdev" "Block size")"
+    blk_cnt="$(dev_fs_param "$pdev" "Block count")"
+    sct_cnt=$(( ($blk_sz * $blk_cnt) / 512 ))
+
+    echo "size=$sct_cnt" | sfdisk -N "$pnum" "$dev"
+    partprobe "$dev"
+
+    sct_end="$(dev_last_block "$dev")"
+    byt_end=$(( ($sct_end + 1) * 512 ))
+
+    loop_stop "$dev"
+
+    truncate -s "$byt_end" "$img"
+}
+
 # vi:set ft=sh:
