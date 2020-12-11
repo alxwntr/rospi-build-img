@@ -116,7 +116,7 @@ img_shrink_fs () {
     pdev="$dev$part_root"
     pnum="${part_root#p}"
 
-    e2fsck -n -f "$pdev" 
+    e2fsck -y -f "$pdev" 
     resize2fs -M "$pdev"
     sync
 
