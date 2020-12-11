@@ -65,9 +65,9 @@ img_mkfs () {
 
     lo="$(loop_start "$img")"
 
-    mkfs.vfat "${lo}${part_boot}"
-    [ -n "${part_swap}" ] && mkswap "${lo}${part_swap}"
-    mkfs.ext4 -E nodiscard -L writable "${lo}${part_root}"
+    mkfs.vfat -n "rospi-boot" "${lo}${part_boot}"
+    [ -n "${part_swap}" ] && mkswap -L "rospi-swap" "${lo}${part_swap}"
+    mkfs.ext4 -E nodiscard -L "rospi-root" "${lo}${part_root}"
 
     loop_stop "$lo"
 }
@@ -103,6 +103,24 @@ img_umount () {
 
     umount --recursive "$root"
     loop_stop "$lo"
+}
+
+# img_write_fstab
+# Write a suitable fstab file
+img_write_fstab () {
+    local swline=
+    local fstab="$root/etc/fstab"
+
+    [ -d "$image_root" ] || die "No image mounted!"
+    
+    cat >"$fstab" <<FSTAB
+LABEL=rospi-root    /               ext4    rw  1 0
+LABEL=rospi-boot    /boot/firmware  vfat    rw  2 0
+FSTAB
+
+    [ -n "$image_swap" ] && cat >>"$fstab" <<FSTAB
+LABEL=rospi-swap    swap            swap    sw  0 0
+FSTAB
 }
 
 # img_shrink_fs IMG

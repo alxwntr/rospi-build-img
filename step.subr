@@ -8,6 +8,7 @@ step_all_steps="\
     sources \
     install \
     bootable \
+    setup \
     umount \
     shrink \
 "
@@ -70,6 +71,13 @@ step_bootable () {
     do
         install_file "$b" "$image_root/boot/firmware"
     done
+
+    img_write_fstab
+}
+
+step_setup () {
+    pkg_create_users
+    pkg_setup_network
 }
 
 step_shrink () {
