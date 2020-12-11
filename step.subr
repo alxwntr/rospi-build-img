@@ -31,20 +31,18 @@ step_create () {
 }
 
 step_bootstrap () {
-    local lo="$(img_mount "$image_file" "$image_root")"
+    img_mount "$image_file" "$image_root"
     pkg_bootstrap 
-    img_umount "$image_root" "$lo"
+    img_umount "$image_root"
 }
 
 step_mount () {
-    image_loop="$(img_mount "$image_file" "$image_root")"
+    img_mount "$image_file" "$image_root"
     dev_mount_special "$image_root"
 }
 
 step_umount () {
-    dev_umount_special "$image_root"
-    img_umount "$image_root" "$image_loop"
-    image_loop=
+    img_umount "$image_root"
 }
 
 step_sources () {

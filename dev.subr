@@ -41,12 +41,5 @@ dev_mount_special () {
     mount -t devpts devpts "$dir/dev/pts"
 }
 
-# dev_umount_special DIR
-# Unmount special filesystems from DIR
-dev_umount_special () {
-    local dir="$1"
-
-    umount "$dir/dev/pts" "$dir/dev" "$dir/sys" "$dir/proc"
-}
 
 # vi:set ft=sh:

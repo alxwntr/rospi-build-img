@@ -67,11 +67,8 @@ img_mkfs () {
 
     mkfs.vfat "${lo}${part_boot}"
     [ -n "${part_swap}" ] && mkswap "${lo}${part_swap}"
-    mkfs.ext4 "${lo}${part_root}"
+    mkfs.ext4 -E nodiscard -L writable "${lo}${part_root}"
 
-    # Unloop the device here. Sometimes the kernel gets upset if we don't do
-    # this, and starts complaining about WRITE_ZEROS failures. (This may only
-    # happen if the img is on NFS.)
     loop_stop "$lo"
 }
 
@@ -91,19 +88,20 @@ img_mount () {
     mount -t ext4 "${lo}${part_root}" "$dir"
     install_dir "$dir/boot/firmware"
     mount -t vfat "${lo}${part_boot}" "$dir/boot/firmware"
-
-    echo "$lo"
 }
 
 # img_umount DIR LOOP
 # Unmount the image from DIR and unloop LOOP
 img_umount () {
-    local root="$1" lo="$2"
+    local root="$1"
+    local part="$(findmnt -no source "$root")"
+    local lo="${part%p*}"
 
-    say "Unmounting from [$root]..."
+    [ -e "$lo" ] || die "No mount device [$lo]"
 
-    umount "$root/boot/firmware"
-    umount "$root"
+    say "Unmounting [$lo] from [$root]..."
+
+    umount --recursive "$root"
     loop_stop "$lo"
 }
 
