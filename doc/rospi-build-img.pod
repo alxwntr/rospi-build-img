@@ -1,0 +1,164 @@
+=head1 NAME
+
+rospi-buid-img - Build images for the Raspberry Pi
+
+=head1 SYNOPSIS
+
+B<rospi-build-img> [I<-R root>] [I<-S steps>] I<config> I<image-file>
+
+=head1 DESCRIPTION
+
+This utility builds an image for a Raspberry Pi. The details of how to
+construct the image are found in the config file, described below.
+
+The utility will need to be run as root, on a Pi or another machine
+capable of executing armhf code. It may be possible to use L<qemu(1)>
+for this but I have not tested it.
+
+The utility accepts the following options:
+
+=over 4
+
+=item -R root
+
+Use the specified directory as the temporary root mount while building
+the image. If not specified this defaults to I<root> in the current
+directory.
+
+=item -S steps
+
+Run only the specified steps of the process (a space-separated list).
+The steps normally run are:
+
+=over 4
+
+=item create
+
+Create the image file, deleting any existing file of that name. Create
+the partition table and the filesystems.
+
+=item bootstrap
+
+Run L<debootstrap(8)> to perform the initial setup of the system. This
+uses the I<dist_release> and I<dist_mirror> entries from the config
+file.
+
+=item mount
+
+Set up a loop device on the image file and mount the filesystems on the
+specified temporary mountpoint. This will also mount I</proc>, I</sys>
+and so on under the new root.
+
+=item sources
+
+Configure the I<sources.list> files in the new environment. This uses
+the I<sources_lists> and I<sources_keys> entries from the config file.
+This will access the network to download metadata from the new source
+lists.
+
+=item install
+
+Install the packages listed in I<packages_install> in the config file.
+
+=item bootable
+
+Make the new image bootable. For a Raspberry Pi this means copying
+appropriate files into the I</boot/firmware> partition.
+
+=item setup
+
+Set up users and networking for the new machine.
+
+=item umount
+
+Unmount the image and detach the loop device.
+
+=item shrink
+
+Shrink the root filesystem of the image as small as possible to make the
+final image smaller. This step must be performed last as it is unlikely
+there will be space in the filesystem after this.
+
+=back
+
+=back
+
+=head1 CONFIG FILE
+
+The config file used to build the image consists of variables set in
+shell format. Currently it is in fact sourced as a shell script, but
+don't rely on this; the file should consist solely of variable
+assignments with double-quoted LHSs. Defined variables are:
+
+=over 4
+
+=item dist_mirror
+
+The repository to bootstrap the system from. See L<debootstrap(8)>.
+
+=item dist_release
+
+The OS release to bootstrap. See L<debootstrap(8)>. This is also used to
+default a number of other things.
+
+The initial I<sources.list> file will be copied from a file of this name
+in the I<sources> directory.
+
+=item http_proxy
+
+If this is set, all APT downloads will be passed through this proxy.
+This can be useful to avoid repeatedly downloading the same data. The
+B<squid-deb-proxy> package may give a useful place to start for
+configuring a suitable proxy.
+
+=item image_size
+
+The initial size of the image file. This will be shrunk at the end, when
+everything is installed, but if the initial size is too small it will
+not be increased. This is measured in bytes, but I<k>, I<M>, I<G>
+suffixes are recognised.
+
+=item image_swap
+
+If this is set the image will be created with a swap partition of this
+size. If it is not set no swap will be created.
+
+=item sources_lists
+
+This should be a space-separated list of names. For each name in the
+list, the file I<sources/NAME.list> will be copied into
+I</etc/apt/sources.list.d> in the new image. This can be used to install
+packages from foreign repositories.
+
+=item sources_keys
+
+This should be a space-separated list of names. For each name in the
+list, the file I<gpgkeys/NAME.gpg> will be copied into
+I</etc/apt/trusted.gpg.d> in the new image. See L<apt-secure(8)>.
+
+=item packages_install
+
+A space-separated list of packages to install in the I<install> step.
+
+=back
+
+=head1 AUTHOR
+
+Ben Morrow <L<ben@morrow.me.uk>>.
+
+=head1 BUGS
+
+A Linux chroot does not provide very much isolation from the host
+system. It is rather too easy for the build to mess up the host; in
+particular, the installation always seems to reset the console keyboard
+settings. These can be restored using C<sudo setupcons -k>.
+
+=head1 COPYRIGHT
+
+Copyright 2020 Ben Morrow.
+
+Released under the 2-clause BSD licence.
+
+=head1 SEE ALSO
+
+L<debootstrap(8)> L<apt(8)>
