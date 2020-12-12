@@ -10,18 +10,27 @@
 # Pi3 uboot happens to work happily on the Pi2, so it needs to go at the bottom
 # to support old firmwares.
 
-[pi4]
-kernel=uboot_rpi_4_32b.bin
-max_framebuffers=2
+# ROSPI: The normal Ubuntu boot process on ARM uses U-Boot. This file
+# changes this to boot linux directly from here, as Raspian does. I
+# don't see any advantage to using U-Boot on a Pi, and there are a
+# number of config.txt settings that don't work properly if U-Boot is
+# used. (Overscan control, for example.)
 
-[pi2]
-kernel=uboot_rpi_2.bin
+kernel=vmlinuz
+initramfs initrd.img followkernel
 
-[pi3]
-kernel=uboot_rpi_3_32b.bin
+#[pi4]
+#kernel=uboot_rpi_4_32b.bin
+#max_framebuffers=2
 
-[all]
-device_tree_address=0x03000000
+#[pi2]
+#kernel=uboot_rpi_2.bin
+
+#[pi3]
+#kernel=uboot_rpi_3_32b.bin
+
+#[all]
+#device_tree_address=0x03000000
 
 # The following settings are "defaults" expected to be overridden by the
 # included configuration. The only reason they are included is, again, to
