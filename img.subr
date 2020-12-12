@@ -109,7 +109,7 @@ img_umount () {
 # Write a suitable fstab file
 img_write_fstab () {
     local swline=
-    local fstab="$root/etc/fstab"
+    local fstab="$image_root/etc/fstab"
 
     [ -d "$image_root" ] || die "No image mounted!"
     
