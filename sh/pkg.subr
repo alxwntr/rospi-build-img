@@ -90,4 +90,11 @@ pkg_setup_network () {
     echo "rospi" >"$pkg_root/etc/hostname"
 }
 
+# pkg_clean_apt
+# Clean the apt package cache
+pkg_clean_apt () {
+    say "Cleaning the apt cache..."
+    pkg_injail apt-cache clean
+}
+
 # vi:set ft=sh:

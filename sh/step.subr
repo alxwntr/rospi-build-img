@@ -9,6 +9,7 @@ step_all_steps="\
     install \
     bootable \
     setup \
+    clean \
     umount \
     shrink \
 "
@@ -78,6 +79,10 @@ step_bootable () {
 step_setup () {
     pkg_create_users
     pkg_setup_network
+}
+
+step_clean () {
+    pkg_clean_apt
 }
 
 step_shrink () {
