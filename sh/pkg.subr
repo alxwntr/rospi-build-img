@@ -78,7 +78,6 @@ pkg_create_users () {
     pkg_injail adduser --disabled-login --gecos "ROS Pi user" rospi
     pkg_injail chpasswd <<PASSWD
 rospi:rospi
-root:root
 PASSWD
     pkg_injail passwd -e rospi
     pkg_injail usermod -a -G adm,sudo,plugdev rospi
