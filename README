@@ -54,6 +54,10 @@ DESCRIPTION
         setup
             Set up users and networking for the new machine.
 
+        clean
+            Clean up anything unnecessary for the final image, like the apt
+            package cache.
+
         umount
             Unmount the image and detach the loop device.
 

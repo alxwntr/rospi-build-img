@@ -69,6 +69,11 @@ appropriate files into the I</boot/firmware> partition.
 
 Set up users and networking for the new machine.
 
+=item clean
+
+Clean up anything unnecessary for the final image, like the apt package
+cache.
+
 =item umount
 
 Unmount the image and detach the loop device.
