@@ -114,12 +114,12 @@ img_write_fstab () {
     [ -d "$image_root" ] || die "No image mounted!"
     
     cat >"$fstab" <<FSTAB
-LABEL=rospi-root    /               ext4    rw  1 0
-LABEL=rospi-boot    /boot/firmware  vfat    rw  2 0
+LABEL=rospi-root    /               ext4    rw,x-systemd.growfs		1 0
+LABEL=rospi-boot    /boot/firmware  vfat    rw  			2 0
 FSTAB
 
     [ -n "$image_swap" ] && cat >>"$fstab" <<FSTAB
-LABEL=rospi-swap    swap            swap    sw  0 0
+LABEL=rospi-swap    swap            swap    sw  			0 0
 FSTAB
 }
 
