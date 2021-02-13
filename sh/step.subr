@@ -9,6 +9,8 @@ step_all_steps="\
     install \
     bootable \
     setup \
+    ros_init \
+    ws_create \
     clean \
     umount \
     shrink \
@@ -79,6 +81,17 @@ step_bootable () {
 step_setup () {
     pkg_create_users
     pkg_setup_network
+}
+
+step_ros_init () {
+    pkg_injail rosdep init
+    pkg_injail rosdep update
+}
+
+step_ws_create () {
+    pkg_injail mkdir -p ~/catkin_ws/src
+    pkg_injail ~/catkin_ws/
+    pkg_injail catkin_make
 }
 
 step_clean () {
