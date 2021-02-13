@@ -89,8 +89,8 @@ step_ros_init () {
 }
 
 step_ws_create () {
-    pkg_injail mkdir -p ~/catkin_ws/src
-    pkg_injail ~/catkin_ws/
+    pkg_injail sudo mkdir -p /home/rospi/catkin_ws/src
+    pkg_injail cd /home/rospi/catkin_ws/
     pkg_injail catkin_make
 }
 
