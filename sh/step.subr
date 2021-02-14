@@ -89,9 +89,11 @@ step_ros_init () {
 }
 
 step_ws_create () {
-    pkg_injail sudo mkdir -p /home/rospi/catkin_ws/src
-    pkg_injail cd /home/rospi/catkin_ws/
-    pkg_injail catkin_make
+    pkg_injail sh -c '
+        . /opt/ros/melodic/setup.sh
+        cd /home/rospi/catkin_ws
+        catkin_make
+    '
 }
 
 step_clean () {
