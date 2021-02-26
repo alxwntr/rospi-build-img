@@ -36,7 +36,7 @@ initramfs initrd.img followkernel
 # included configuration. The only reason they are included is, again, to
 # support old firmwares which don't understand the "include" command.
 
-enable_uart=1
+dtoverlay=disable-bt
 cmdline=nobtcmd.txt
 
 include syscfg.txt
